@@ -2,51 +2,129 @@ import java.net.*;
 import java.util.Scanner;
 import java.io.*;
 
-class ClienteTCP {
+class ClienteTCP 
+{
 	private Socket socketCliente = null;
 	private BufferedReader entrada = null;
 	private PrintWriter salida = null;
 
-	public ClienteTCP(String ip, int puerto) {
-		try {
+	public ClienteTCP(String ip, int puerto)
+	{
+		try
+		{
 			socketCliente = new Socket(ip, puerto);
-			System.out.println("Conexi�n establecida: " + socketCliente);
+			System.out.println("Conexión establecida: " + socketCliente);
 			entrada = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
 			salida = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socketCliente.getOutputStream())), true);
-		} catch (IOException e) {
+		}
+		catch (IOException e) 
+		{
 			System.err.printf("Imposible conectar con ip:%s / puerto:%d",ip,puerto);
 			System.exit(-1);
 		}
 	}
 
-	public void closeClienteTCP() {
-		try {
+	public void closeClienteTCP() 
+	{
+		try 
+		{
 			salida.close();
 			entrada.close();
 			socketCliente.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e)
+		{
 			e.printStackTrace();
 		}
+		
 		System.out.println("-> Cliente Terminado");
 	}
 
-	public void enviarMsg(String linea) {
+	public void enviarMsg(String linea)
+	{
 		salida.println(linea);
 	}
 
-	public String recibirMsg() {
+	public String recibirMsg() 
+	{
 		String msg = "";
-		try {
+		try 
+		{
 			msg = entrada.readLine();
-		} catch (IOException e) {
+		} 
+		catch (IOException e)
+		{
 			e.printStackTrace();
 		}
+		
 		return msg;
 	}
 }
 
-public class Cliente {
-	public static void main(String[] args) throws IOException {
+class ClienteUDP 
+{
+	private DatagramSocket socketUDP;
+
+	public ClienteUDP() 
+	{
+		try 
+		{
+			socketUDP = new DatagramSocket();
+		}
+		catch (SocketException e) 
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void enviarMsg(String msg, String ip, int puerto) 
+	{
+		InetAddress hostServidor;
+		
+		try 
+		{
+			hostServidor = InetAddress.getByName(ip);
+			byte[] mensaje = msg.getBytes();
+			DatagramPacket peticion = new DatagramPacket(mensaje, mensaje.length, hostServidor, puerto);
+			socketUDP.send(peticion);
+		}
+		catch (IOException e1)
+		{
+			e1.printStackTrace();
+		}
+	}
+
+	public String recibirMsg()
+	{
+		DatagramPacket respuesta = null;
+		
+		try 
+		{
+			byte[] bufer = new byte[1000];
+			respuesta = new DatagramPacket(bufer, bufer.length);
+			socketUDP.receive(respuesta);
+		} 
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return new String(respuesta.getData()).trim();
+	}
+
+	public void closeClienteUDP() 
+	{
+		socketUDP.close();
+		System.out.println("-> Cliente Terminado");
+	}
+}
+
+public class Cliente extends Thread
+{
+	String [] archivos;
+	
+	public static void main(String[] args) throws IOException 
+	{
 		Scanner sc = new Scanner(System.in);
 		String linea;
 		ClienteTCP canal = new ClienteTCP("localhost", 5555);
@@ -56,7 +134,9 @@ public class Cliente {
 			linea = sc.nextLine();
 			canal.enviarMsg(linea);
 			System.out.println("Servidor: " + canal.recibirMsg());
-		} while (!linea.equals("Adiós"));
+		}
+		while (!linea.equals("Adiós"));
 		canal.closeClienteTCP();
+		sc.close();
 	}
 }
