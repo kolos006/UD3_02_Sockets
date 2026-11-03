@@ -61,15 +61,17 @@ class ServidorTCP
 			switch (firstWord) 
 			{
 			
-			case "REGISTER": 
+			case "REGISTER":
+				registrarCliente();
 				break;
-			case "REGISTER": 
+			case "SEARCH":
+				buscarArchivo();
 				break;
-			case "REGISTER": 
+			case "GET":
+				mandarArchivo();
 				break;
-			case "REGISTER": 
-				break;
-			case "UNREGISTER": 
+			case "UNREGISTER":
+				unregisterCliente();
 				break;
 			}
 		}
@@ -79,6 +81,26 @@ class ServidorTCP
 		}
 		
 		return linea;
+	}
+
+	private void unregisterCliente() 
+	{
+		
+	}
+
+	private void registrarCliente() 
+	{
+		
+	}
+
+	private void mandarArchivo() 
+	{
+		
+	}
+
+	private void buscarArchivo() 
+	{
+		
 	}
 
 	public void enviarMsg(String linea) 
